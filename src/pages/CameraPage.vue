@@ -19,7 +19,7 @@
   <v-row justify="center" class="mt-8">
     <v-col cols="12" md="6" class="text-center">
       <v-btn
-        v-if="hasCameraSupport"
+        v-if="isCameraSupport"
         class="text-white"
         color="blue-grey"
         fab
@@ -61,7 +61,7 @@
         bg-color="transparent"
       >
         <template v-slot:append>
-          <v-icon>mdi-map-marker</v-icon>
+          <v-icon @click="getLocation">mdi-map-marker</v-icon>
         </template>
       </v-text-field>
     </v-col>
@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 require('md-gum-polyfill');
 
@@ -86,7 +86,7 @@ const post = ref({
   date: Date.now(),
 });
 const photoIsCreated = ref(false);
-const hasCameraSupport = ref(true);
+const isCameraSupport = ref(true);
 const imageUpload = ref([]);
 
 const video = ref(null);
@@ -96,22 +96,23 @@ const initCamera = () => {
   try {
     navigator.mediaDevices
       .getUserMedia({
-        video: {
-          facingMode: { exact: 'environment' },
-        },
+        video: true,
+        //   {
+        //   facingMode: { exact: 'environment' },
+        // },
       })
       .then((stream) => {
         video.value.srcObject = stream;
       })
       .catch((err) => {
-        hasCameraSupport.value = false;
-        // console.error(err);
+        isCameraSupport.value = false;
+        console.error(err);
         // alert(err);
       });
   } catch (error) {
-    // console.error(error);
+    console.error(error);
     // alert(error);
-    hasCameraSupport.value = false;
+    isCameraSupport.value = false;
   }
 };
 
@@ -139,6 +140,12 @@ const dataURItoBlob = (dataURI) => {
   return blob;
 };
 
+const disableCamera = () => {
+  video.value.srcObject.getVideoTracks().forEach((track) => {
+    track.stop();
+  });
+};
+
 const captureImage = () => {
   canvas.value.width = video.value.getBoundingClientRect().width;
   canvas.value.height = video.value.getBoundingClientRect().height;
@@ -147,6 +154,7 @@ const captureImage = () => {
   photoIsCreated.value = true;
   const canvasURI = canvas.value.toDataURL();
   post.value.photo = canvasURI ? dataURItoBlob(canvasURI) : null;
+  disableCamera();
 };
 
 const captureImageFallback = (file) => {
@@ -167,14 +175,23 @@ const captureImageFallback = (file) => {
   reader.readAsDataURL(file[0]);
 };
 
-const disableCamera = () => {
-  video.value.srcObject.getVideoTracks().forEach((track) => {
-    track.stop();
-  });
+const getCityAndCountry = (position) => {
+  const apiURL = 'https://geocode.xyz/42.2805504,18.8809216?json=1';
+};
+
+const getLocation = () => {
+  navigator.geolocation.getCurrentPosition((position) => {
+    getCityAndCountry(position);
+  }, (error) => {
+    console.error(error);
+  }, { timeout: 7000 });
 };
 
 onMounted(() => {
   initCamera();
+});
+onBeforeUnmount(() => {
+  if (isCameraSupport.value) disableCamera();
 });
 </script>
 
