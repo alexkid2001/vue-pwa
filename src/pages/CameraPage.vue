@@ -59,8 +59,9 @@
         required
         filled
         bg-color="transparent"
+        :loading="isLocationLoading"
       >
-        <template v-slot:append>
+        <template v-slot:append v-if="!isLocationLoading || !isLocationSupported">
           <v-icon @click="getLocation">mdi-map-marker</v-icon>
         </template>
       </v-text-field>
@@ -74,7 +75,11 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import {
+  computed,
+  inject, onBeforeUnmount, onMounted, ref,
+} from 'vue';
+import axios from 'axios';
 
 require('md-gum-polyfill');
 
@@ -85,9 +90,12 @@ const post = ref({
   photo: null,
   date: Date.now(),
 });
+// const axios = inject('axios');
+
 const photoIsCreated = ref(false);
 const isCameraSupport = ref(true);
 const imageUpload = ref([]);
+const isLocationLoading = ref(false);
 
 const video = ref(null);
 const canvas = ref(null);
@@ -175,17 +183,35 @@ const captureImageFallback = (file) => {
   reader.readAsDataURL(file[0]);
 };
 
+const locationSuccess = (data) => {
+  const { city, country } = data;
+  post.value.location = `${city}, ${country}`;
+};
+
+const locationError = (error) => {
+  console.error(error);
+  isLocationLoading.value = false;
+};
+
 const getCityAndCountry = (position) => {
-  const apiURL = 'https://geocode.xyz/42.2805504,18.8809216?json=1';
+  const { latitude, longitude } = position.coords;
+  const apiURL = `https://geocode.xyz/${latitude},${longitude}?json=1`;
+  axios.get(apiURL)
+    .then((response) => {
+      locationSuccess(response.data);
+      isLocationLoading.value = false;
+    })
+    .catch(locationError);
 };
 
 const getLocation = () => {
+  isLocationLoading.value = true;
   navigator.geolocation.getCurrentPosition((position) => {
     getCityAndCountry(position);
-  }, (error) => {
-    console.error(error);
-  }, { timeout: 7000 });
+  }, locationError, { timeout: 7000 });
 };
+
+const isLocationSupported = computed(() => 'geolocation' in navigator);
 
 onMounted(() => {
   initCamera();
