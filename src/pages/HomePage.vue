@@ -22,8 +22,10 @@
 import { IPost } from '@/models/post';
 import PostCard from '@/components/PostCard.vue';
 import ProfilePreview from '@/components/ProfilePreview.vue';
+import { onBeforeMount, ref } from 'vue';
+import axios from 'axios';
 
-const posts: IPost[] = [
+const posts = ref<IPost[]>([
   {
     id: 1,
     user: 'danny__connell',
@@ -60,5 +62,16 @@ const posts: IPost[] = [
     imageUrl:
       'https://cdn.britannica.com/95/94195-050-FCBF777E/Golden-Gate-Bridge-San-Francisco.jpg',
   },
-];
+]);
+
+const getPosts = () => {
+  axios.get('http://localhost:3000/posts')
+    .then((resp) => {
+      console.log(resp.data);
+      posts.value = resp.data;
+    })
+    .catch((error) => console.error(error));
+};
+
+onBeforeMount(() => getPosts());
 </script>
