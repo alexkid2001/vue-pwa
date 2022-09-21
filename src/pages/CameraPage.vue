@@ -69,7 +69,7 @@
   </v-row>
   <v-row justify="center" class="mt-6">
     <v-col cols="12" md="6" class="text-center">
-      <v-btn rounded color="success" size="large">Post Image</v-btn>
+      <v-btn rounded color="success" size="large" @click="addPost">Post Image</v-btn>
     </v-col>
   </v-row>
 </template>
@@ -209,6 +209,22 @@ const getLocation = () => {
   navigator.geolocation.getCurrentPosition((position) => {
     getCityAndCountry(position);
   }, locationError, { timeout: 7000 });
+};
+
+const addPost = () => {
+  const formData = new FormData();
+  formData.append('caption', post.value.caption);
+  formData.append('location', post.value.location);
+  formData.append('date', post.value.date);
+  formData.append('file', post.value.photo, `${Math.random().toString().substring(2)}.png`);
+
+  axios.post(`${process.env.VUE_APP_API}/creatPost`, formData)
+    .then((resp) => {
+      console.log(resp);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 };
 
 const isLocationSupported = computed(() => 'geolocation' in navigator);
