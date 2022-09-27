@@ -1,18 +1,24 @@
 const express = require('express');
 const admin = require('firebase-admin');
+const { getStorage } = require('firebase-admin/storage');
 const busboy = require('busboy');
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+const UUID = require('uuid-v4');
+
 const serviceAccount = require('./serviceAccountKey.json');
-const { fi } = require('vuetify/locale');
 
 const app = express();
 const port = 3000;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://vue-pwa-6a996-default-rtdb.europe-west1.firebasedatabase.app',
+  storageBucket: 'vue-pwa-6a996.appspot.com',
 });
 
 const db = admin.firestore();
+const bucket = getStorage().bucket();
 
 app.get('/posts', async (req, res) => {
   const posts = [];
@@ -27,11 +33,13 @@ app.get('/posts', async (req, res) => {
   res.send(posts);
 });
 
-app.get('/creatPost', async (req, res) => {
+app.post('/creatPost', async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
 
+  const uuid = UUID();
   const fields = {};
   const bb = busboy({ headers: req.headers });
+  let fileData = {};
 
   bb.on('file', (name, file, info) => {
     const { filename, encoding, mimeType } = info;
@@ -41,11 +49,9 @@ app.get('/creatPost', async (req, res) => {
       encoding,
       mimeType,
     );
-    file.on('data', (data) => {
-      console.log(`File [${name}] got ${data.length} bytes`);
-    }).on('close', () => {
-      console.log(`File [${name}] done`);
-    });
+    const filepath = path.join(os.tmpdir(), filename);
+    file.pipe(fs.createWriteStream(filepath));
+    fileData = { filepath, mimeType };
   });
 
   bb.on('field', (name, val, info) => {
@@ -54,17 +60,36 @@ app.get('/creatPost', async (req, res) => {
   });
 
   bb.on('close', () => {
-    console.log('fields', fields);
-    db.collection('posts').doc().set({
-      id: fields.id,
-      caption: fields.caption,
-      location: fields.location,
-      date: parseInt(fields.date, 10),
-      imageURL: '',
-    });
-    console.log('Done parsing form!');
-    // res.writeHead(303, { Connection: 'close', Location: '/' });
-    res.send('Done send file');
+    console.log('close', fileData.filepath);
+    bucket.upload(
+      fileData.filepath,
+      {
+        uploadType: 'media',
+        metadata: {
+          metadata: {
+            contentType: fileData.mimeType,
+            firebaseStorageDownloadTokens: uuid,
+          },
+        },
+      },
+      (err, uploadedFile) => {
+        if (!err) {
+          createDocument(uploadedFile);
+        } else {
+          console.log('uploadFile Error', err);
+        }
+      },
+    );
+
+    function createDocument(uploadedFile) {
+      db.collection('posts').doc().set({
+        // id: fields.id,
+        caption: fields.caption,
+        location: fields.location,
+        date: parseInt(fields.date, 10),
+        imageURL: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${uuid}`,
+      }).then(() => res.send('Post added:'));
+    }
   });
 
   req.pipe(bb);

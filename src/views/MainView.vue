@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-layout class="h-100 d-flex flex-column">
+    <v-layout class="h-100 d-flex flex-column pb-16">
       <v-app-bar class="text-blue-grey-darken-4" border flat>
         <v-btn to="/camera" class="d-none d-md-flex">
           <v-icon icon="mdi-camera" size="x-large" />
@@ -42,6 +42,13 @@ const drawer = false;
 <style lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Grand+Hotel&display=swap");
 
+.v-app-bar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
 .v-toolbar-title {
   font-family: "Grand Hotel", cursive;
   font-size: 32px;
@@ -58,5 +65,13 @@ const drawer = false;
 
 .v-container {
   max-width: 1200px !important;
+}
+
+.v-footer {
+  position: fixed !important;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 }
 </style>

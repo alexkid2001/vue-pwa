@@ -216,7 +216,7 @@ const addPost = () => {
   formData.append('caption', post.value.caption);
   formData.append('location', post.value.location);
   formData.append('date', post.value.date);
-  formData.append('file', post.value.photo, `${Math.random().toString().substring(2)}.png`);
+  formData.append('file', post.value.photo[0], `${Math.random().toString().substring(2)}.png`);
 
   axios.post(`${process.env.VUE_APP_API}/creatPost`, formData)
     .then((resp) => {
