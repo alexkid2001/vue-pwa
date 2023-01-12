@@ -34,7 +34,7 @@
       <v-file-input
         v-else
         accept="image/*"
-        label="Choose on image"
+        label="Choose an image"
         v-model="imageUpload"
         @update:modelValue="captureImageFallback"
       ></v-file-input>
@@ -61,6 +61,16 @@
         bg-color="transparent"
         :loading="isLocationLoading"
       >
+        <template v-slot:loader>
+          <v-progress-linear
+            :active="isLocationLoading"
+            :model-value="progress"
+            :color="color"
+            absolute
+            height="7"
+            indeterminate
+          ></v-progress-linear>
+        </template>
         <template v-slot:append v-if="!isLocationLoading || !isLocationSupported">
           <v-icon @click="getLocation">mdi-map-marker</v-icon>
         </template>
@@ -228,6 +238,8 @@ const addPost = () => {
 };
 
 const isLocationSupported = computed(() => 'geolocation' in navigator);
+const progress = computed(() => Math.min(100, 10));
+const color = computed(() => ['error', 'warning', 'success'][Math.floor(progress.value / 40)]);
 
 onMounted(() => {
   initCamera();
