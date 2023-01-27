@@ -22,7 +22,7 @@
 import { computed, defineProps } from 'vue';
 
 const props = defineProps<{
-  id: number;
+  id: string;
   user: string;
   caption: string;
   date: number;
