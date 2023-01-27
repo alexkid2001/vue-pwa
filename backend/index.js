@@ -28,8 +28,10 @@ app.get('/posts', async (req, res) => {
   const postsRef = db.collection('posts');
   const snapshot = await postsRef.orderBy('date', 'desc').limit(5).get();
   snapshot.forEach((doc) => {
-    posts.push(doc.data());
+    console.log(doc.id);
+    posts.push({ ...doc.data(), id: doc.id });
   });
+  // posts.push(doc.data());
   res.send(posts);
 });
 
@@ -61,6 +63,17 @@ app.post('/creatPost', async (req, res) => {
 
   bb.on('close', () => {
     console.log('close', fileData.filepath);
+
+    function createDocument(uploadedFile) {
+      db.collection('posts').doc().set({
+        // id: fields.id,
+        caption: fields.caption,
+        location: fields.location,
+        date: parseInt(fields.date, 10),
+        imageURL: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${uuid}`,
+      }).then(() => res.send('Post added:'));
+    }
+
     bucket.upload(
       fileData.filepath,
       {
@@ -80,16 +93,6 @@ app.post('/creatPost', async (req, res) => {
         }
       },
     );
-
-    function createDocument(uploadedFile) {
-      db.collection('posts').doc().set({
-        // id: fields.id,
-        caption: fields.caption,
-        location: fields.location,
-        date: parseInt(fields.date, 10),
-        imageURL: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${uuid}`,
-      }).then(() => res.send('Post added:'));
-    }
   });
 
   req.pipe(bb);
