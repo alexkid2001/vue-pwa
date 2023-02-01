@@ -95,7 +95,7 @@ const getPosts = () => {
       posts.value = resp.data;
     })
     .catch((error) => {
-      showMessage('error', error);
+      showMessage('error', 'Could not download posts');
       console.error(error);
     });
 };

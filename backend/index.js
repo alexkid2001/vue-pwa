@@ -70,7 +70,7 @@ app.post('/creatPost', async (req, res) => {
         caption: fields.caption,
         location: fields.location,
         date: parseInt(fields.date, 10),
-        imageURL: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${uuid}`,
+        imageUrl: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${uuid}`,
       }).then(() => res.send('Post added:'));
     }
 
