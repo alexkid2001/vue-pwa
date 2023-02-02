@@ -38,7 +38,7 @@ app.get('/posts', async (req, res) => {
 app.post('/creatPost', async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
 
-  const uuid = UUID();
+  const uuid = crypto.randomUUID();
   const fields = {};
   const bb = busboy({ headers: req.headers });
   let fileData = {};

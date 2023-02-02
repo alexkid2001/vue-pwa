@@ -27,6 +27,7 @@
         rounded
         icon
         @click="captureImage"
+        :disabled="photoIsCreated"
       >
         <v-icon size="x-large">mdi-camera</v-icon>
       </v-btn>
@@ -79,7 +80,13 @@
   </v-row>
   <v-row justify="center" class="mt-6">
     <v-col cols="12" md="6" class="text-center">
-      <v-btn rounded color="success" size="large" @click="addPost">Post Image</v-btn>
+      <v-btn
+        rounded
+        color="success"
+        size="large"
+        @click="addPost"
+        :disabled="!post.caption || !post.photo"
+      >Post Image</v-btn>
     </v-col>
   </v-row>
 </template>
@@ -90,6 +97,7 @@ import {
   inject, onBeforeUnmount, onMounted, ref,
 } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 require('md-gum-polyfill');
 
@@ -109,6 +117,7 @@ const isLocationLoading = ref(false);
 
 const video = ref(null);
 const canvas = ref(null);
+const router = useRouter();
 
 const initCamera = () => {
   try {
@@ -230,6 +239,7 @@ const addPost = () => {
 
   axios.post(`${process.env.VUE_APP_API}/creatPost`, formData)
     .then((resp) => {
+      router.push('/');
       console.log(resp);
     })
     .catch((err) => {
