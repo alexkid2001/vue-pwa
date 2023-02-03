@@ -11,6 +11,7 @@
     "@mdi/font": "5.9.55",
     "axios": "^0.27.2",
     "md-gum-polyfill": "^1.0.0",
+    "pinia": "^2.0.30",
     "roboto-fontface": "*",
     "vue": "^3.2.13",
     "vue-axios": "^3.4.1",
