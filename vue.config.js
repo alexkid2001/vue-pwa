@@ -14,4 +14,7 @@ module.exports = defineConfig({
       },
     },
   },
+  pwa: {
+    name: 'My 1st PWA App',
+  },
 });
