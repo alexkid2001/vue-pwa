@@ -18,12 +18,7 @@
       </v-main>
     </v-layout>
     <v-footer class="bg-white text-center d-flex flex-column border d-md-none">
-      <v-tabs
-        class="w-100 d-flex"
-        slider-color="primary"
-        color="primary"
-        centered
-      >
+      <v-tabs class="w-100 d-flex" slider-color="primary" color="primary" centered>
         <v-tab class="w-50" to="/">
           <v-icon icon="mdi-home" size="x-large" />
         </v-tab>
@@ -32,11 +27,12 @@
         </v-tab>
       </v-tabs>
     </v-footer>
+    <global-alert />
   </v-app>
 </template>
 
 <script setup lang="ts">
-const drawer = false;
+import GlobalAlert from '@/components/GlobalAlert.vue';
 </script>
 
 <style lang="scss">

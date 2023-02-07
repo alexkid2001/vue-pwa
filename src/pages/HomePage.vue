@@ -1,11 +1,4 @@
 <template>
-
-  <transition name="fade">
-    <v-row v-if="showAlert" >
-      <v-alert type="error">{{ message }}</v-alert>
-    </v-row>
-  </transition>
-
   <v-row>
     <v-col lg="8">
       <template v-if="posts.length">
@@ -36,66 +29,21 @@ import PostCard from '@/components/PostCard.vue';
 import ProfilePreview from '@/components/ProfilePreview.vue';
 import { onBeforeMount, ref } from 'vue';
 import axios from 'axios';
+import { useAlertStore } from '@/stores/alert';
+import { mockPosts } from '@/constants/mockData';
 
-const posts = ref<IPost[]>([
-  {
-    id: '1',
-    user: 'danny__connell',
-    caption: 'Golden Gate Bridge',
-    date: 1663078058091,
-    location: 'San Francisco, United State',
-    imageUrl:
-      'https://cdn.britannica.com/95/94195-050-FCBF777E/Golden-Gate-Bridge-San-Francisco.jpg',
-  },
-  {
-    id: '2',
-    user: 'danny__connell_2',
-    caption: 'Golden Gate Bridge',
-    date: 1663078058091,
-    location: 'San Francisco, United State',
-    imageUrl:
-      'https://cdn.britannica.com/95/94195-050-FCBF777E/Golden-Gate-Bridge-San-Francisco.jpg',
-  },
-  {
-    id: '3',
-    user: 'danny__connell_3',
-    caption: 'Golden Gate Bridge',
-    date: 1663078058091,
-    location: 'San Francisco, United State',
-    imageUrl:
-      'https://cdn.britannica.com/95/94195-050-FCBF777E/Golden-Gate-Bridge-San-Francisco.jpg',
-  },
-  {
-    id: '4',
-    user: 'danny__connell_4',
-    caption: 'Golden Gate Bridge',
-    date: 1663078058091,
-    location: 'San Francisco, United State',
-    imageUrl:
-      'https://cdn.britannica.com/95/94195-050-FCBF777E/Golden-Gate-Bridge-San-Francisco.jpg',
-  },
-]);
+const posts = ref<IPost[]>(mockPosts);
 
-const message = ref('');
-const alertType = ref('info');
-const showAlert = ref(false);
-
-const showMessage = (type: string, msg: string) => {
-  message.value = msg;
-  alertType.value = type;
-  showAlert.value = true;
-  setTimeout(() => {
-    showAlert.value = false;
-  }, 3000);
-};
+const globalAlert = useAlertStore();
 
 const getPosts = () => {
-  axios.get(`${process.env.VUE_APP_API}/posts`)
+  axios
+    .get(`${process.env.VUE_APP_API}/posts`)
     .then((resp) => {
       posts.value = resp.data;
     })
     .catch((error) => {
-      showMessage('error', 'Could not download posts');
+      globalAlert.setAlert('error', 'Could not download posts');
       console.error(error);
     });
 };
@@ -104,10 +52,12 @@ onBeforeMount(() => getPosts());
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
 }
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

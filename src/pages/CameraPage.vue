@@ -4,15 +4,10 @@
     <v-col cols="12" lg="6">
       <div class="camera-frame pa-2">
         <video class="w-100" autoplay ref="video" v-show="!photoIsCreated">
-          <source />
-          <track src="captions_en.vtt" kind="captions" srclang="en" label="english_captions">
+          <source src=""/>
+          <track src="" kind="captions" srclang="en" label="english_captions" />
         </video>
-        <canvas
-          v-show="photoIsCreated"
-          ref="canvas"
-          class="w-100"
-          height="240"
-        />
+        <canvas v-show="photoIsCreated" ref="canvas" class="w-100" height="240" />
       </div>
     </v-col>
   </v-row>
@@ -86,18 +81,20 @@
         size="large"
         @click="addPost"
         :disabled="!post.caption || !post.photo"
-      >Post Image</v-btn>
+        >Post Image</v-btn
+      >
     </v-col>
   </v-row>
 </template>
 
 <script setup>
 import {
-  computed,
-  inject, onBeforeUnmount, onMounted, ref,
+  computed, onBeforeUnmount, onMounted, ref,
 } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { useAlertStore } from '@/stores/alert';
+import { ERROR_MESSAGE, SUCCESS_MESSAGE } from '@/constants/messages';
 
 require('md-gum-polyfill');
 
@@ -118,6 +115,7 @@ const isLocationLoading = ref(false);
 const video = ref(null);
 const canvas = ref(null);
 const router = useRouter();
+const alert = useAlertStore();
 
 const initCamera = () => {
   try {
@@ -130,14 +128,16 @@ const initCamera = () => {
       })
       .then((stream) => {
         video.value.srcObject = stream;
+        alert.setAlert('success', SUCCESS_MESSAGE.CREATED_POST);
       })
       .catch((err) => {
         isCameraSupport.value = false;
         console.error(err);
-        // alert(err);
+        alert.setAlert('error', ERROR_MESSAGE.CREATING_POST);
       });
   } catch (error) {
     console.error(error);
+    alert.setAlert('error', ERROR_MESSAGE.CAMERA_NOT_SUPPORT);
     // alert(error);
     isCameraSupport.value = false;
   }
@@ -215,7 +215,8 @@ const locationError = (error) => {
 const getCityAndCountry = (position) => {
   const { latitude, longitude } = position.coords;
   const apiURL = `https://geocode.xyz/${latitude},${longitude}?json=1`;
-  axios.get(apiURL)
+  axios
+    .get(apiURL)
     .then((response) => {
       locationSuccess(response.data);
       isLocationLoading.value = false;
@@ -225,9 +226,13 @@ const getCityAndCountry = (position) => {
 
 const getLocation = () => {
   isLocationLoading.value = true;
-  navigator.geolocation.getCurrentPosition((position) => {
-    getCityAndCountry(position);
-  }, locationError, { timeout: 7000 });
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      getCityAndCountry(position);
+    },
+    locationError,
+    { timeout: 7000 },
+  );
 };
 
 const addPost = () => {
@@ -237,7 +242,8 @@ const addPost = () => {
   formData.append('date', post.value.date);
   formData.append('file', post.value.photo[0], `${Math.random().toString().substring(2)}.png`);
 
-  axios.post(`${process.env.VUE_APP_API}/creatPost`, formData)
+  axios
+    .post(`${process.env.VUE_APP_API}/creatPost`, formData)
     .then((resp) => {
       router.push('/');
       console.log(resp);
